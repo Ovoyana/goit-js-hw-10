@@ -1,3 +1,5 @@
+'use strict';
+
 import flatpickr from "flatpickr";
 import iziToast from "izitoast";
 import "flatpickr/dist/flatpickr.min.css";
