@@ -14,6 +14,7 @@ const secondsElement = document.querySelector("[data-seconds]");
 
 startButton.disabled = true;
 let countdownInterval;
+let selectedDate; // Зберігаємо обрану користувачем дату
 
 flatpickr(datetimePicker, {
   enableTime: true,
@@ -21,7 +22,7 @@ flatpickr(datetimePicker, {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    const selectedDate = selectedDates[0];
+    selectedDate = selectedDates[0];
 
     if (selectedDate <= new Date()) {
       iziToast.error({
@@ -35,26 +36,29 @@ flatpickr(datetimePicker, {
   },
 });
 
-function startCountdown(targetDate) {
+function startCountdown() {
   clearInterval(countdownInterval);
 
   countdownInterval = setInterval(() => {
     const currentDate = new Date().getTime();
-    const timeDifference = targetDate - currentDate;
+    const timeDifference = selectedDate - currentDate;
 
     if (timeDifference <= 0) {
       clearInterval(countdownInterval);
       updateTimerDisplay(0, 0, 0, 0);
-      // iziToast.success({
-      //   title: "Success",
-      //   message: "Countdown completed!",
-      // });
-      startButton.disabled = false;
+
+      iziToast.success({
+        title: "Success",
+        message: "Countdown completed!",
+      });
+
+      // Унеможливлюємо вибір нової дати після закінчення таймера
+      datetimePicker.disabled = true;
     } else {
       const { days, hours, minutes, seconds } = convertMs(timeDifference);
       updateTimerDisplay(days, hours, minutes, seconds);
     }
-  }, 1000);
+  }, 1000 - new Date().getMilliseconds());
 }
 
 function updateTimerDisplay(days, hours, minutes, seconds) {
@@ -65,7 +69,7 @@ function updateTimerDisplay(days, hours, minutes, seconds) {
 }
 
 function addLeadingZero(value) {
-  return value < 10 ? `0${value}` : value;
+  return String(value).padStart(2, '0');
 }
 
 function convertMs(ms) {
@@ -83,7 +87,6 @@ function convertMs(ms) {
 }
 
 startButton.addEventListener("click", () => {
-  const selectedDate = flatpickr.parseDate(datetimePicker.value);
   startButton.disabled = true;
-  startCountdown(selectedDate);
+  startCountdown();
 });
